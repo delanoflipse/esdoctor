@@ -12,18 +12,18 @@ const pugtemplate = pug.compile(template, {
 });
 
 module.exports = x => {
-	const { ctx, args, docs, tree, output, resolve, raw } = x;
-	const csspath = path.posix.join(args.exportpath, 'docs', 'static', 'style.css');
-	const indexpath = path.posix.join(args.exportpath, 'docs', 'index.json.js');
-	const jspath = path.posix.join(args.exportpath, 'docs', 'static', 'index.js');
-	const imgpath = path.posix.join(args.exportpath, 'docs', 'static', 'logo.png');
+	const { ctx, config, docs, tree, output, resolve, raw } = x;
+	const csspath = path.posix.join(config.exportpath, 'docs', 'static', 'style.css');
+	const indexpath = path.posix.join(config.exportpath, 'docs', 'index.json.js');
+	const jspath = path.posix.join(config.exportpath, 'docs', 'static', 'index.js');
+	const imgpath = path.posix.join(config.exportpath, 'docs', 'static', 'logo.png');
 
 	return pugtemplate({
 		cssPath: path.posix.relative(output, csspath),
 		jsPath: path.posix.relative(output, jspath),
 		indexPath: path.posix.relative(output, indexpath),
 		vueLogoPath: path.posix.relative(output, imgpath),
-		baseUrl: args.exportpath,
+		baseUrl: config.exportpath,
 		doc: ctx.doc,
 		ctx,
 		raw,

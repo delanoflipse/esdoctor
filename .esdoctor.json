@@ -1,0 +1,11 @@
+{
+    "ignore": [
+		".eslintrc.js",
+		"nuxt.config.js",
+		"docs",
+		"static",
+		"assets"
+	],
+	"debug": true,
+	"exportpath": "docs"
+}

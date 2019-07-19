@@ -1,58 +1,67 @@
+'use strict'
+
+require('colors');
 const fs = require('fs');
 const path = require('path').posix;
-const winpath = require('path');
 const ncp = require('ncp').ncp;
 const rimraf = require('rimraf');
 const genHTML = require('./util/genhtml');
 const genCSS = require('./util/gencss');
 const parseFile = require('./parsers/file.js');
+const generateConfig = require('./util/generateConfig');
 
-const dir = winpath.join(__dirname, '..').replace(/\\/g, '/');
-const dir2 = winpath.resolve(process.cwd()).replace(/\\/g, '/');
-let basepath = path.relative(dir2, dir);
-basepath = basepath ? basepath + '/' : './';
+const dir = './';
 
-const args = {
-	ignore: [
-		'.git',
-		'.nuxt',
-		'node_modules',
-		'.eslintrc.js',
-		'nuxt.config.js',
-		'docs',
-		'doc',
-		'static',
-		'assets',
-	],
-	exportpath: path.join(basepath, 'docs'),
-	basepath,
-	debug: true,
-	dir,
-	currentPath: '',
-};
+function logSucces(message) {
+	console.log(' DONE '.bgGreen.white + ' ' + message);
+}
+
+function logInfo(message) {
+	console.log(' INFO '.bgYellow.white + ' ' + message);
+}
+
+function logError(message) {
+	console.log(' ERROR '.bgRed.white + ' ' + message);
+}
+
+let config = null;
+const files = ['.esdoctor.js', '.esdoctor', '.esdoctor.json'];
+for (const file of files) {
+	if (fs.existsSync(file)) {
+		config = require('./' + file);
+		break;
+	}
+}
+
+if (config === null) {
+	logInfo('no config file found, using defaults.');
+}
+
+config = generateConfig(config, dir);
 
 function parseAll() {
-	if (!args.debug) {
-		rimraf.sync(args.exportpath);
+	if (!config.debug) {
+		rimraf.sync(config.exportpath);
 	}
 
-	fs.mkdirSync(args.exportpath, { recursive: true });
-	fs.mkdirSync(path.join(args.exportpath, 'static'), { recursive: true });
+	fs.mkdirSync(config.exportpath, { recursive: true });
+	fs.mkdirSync(path.join(config.exportpath, 'static'), { recursive: true });
+	logSucces('created documentation folder.');
 
-	genCSS(args);
+	genCSS(config);
+	logSucces('created css.');
 
-	ncp(path.join(basepath, 'doc', 'static'), path.join(args.exportpath, 'static'), function(err) {
+	ncp(path.join(dir, 'static'), path.join(config.exportpath, 'static'), function(err) {
 		if (err) {
+			logError('failed to move static files!');
 			return console.error(err);
 		}
 
-		if (args.debug) {
-			const arg = recursive(path.join(basepath, 'doc', 'sample'));
-			writeAll(arg);
-		}
-
-		const arg = recursive(basepath || '.');
+		logSucces('moved static file.');
+		const arg = recursive(dir || '.');
+		logSucces(`parsed ${arg.count} files`);
 		writeAll(arg);
+		logSucces(`created ${arg.count} files`);
 	});
 }
 
@@ -79,7 +88,7 @@ function writeAll({ docs, tree, resolve }) {
 			output.html,
 			genHTML({
 				ctx,
-				args,
+				config,
 				raw,
 				docs,
 				tree,
@@ -107,7 +116,7 @@ function writeAll({ docs, tree, resolve }) {
 	}, []);
 
 	const json = JSON.stringify(index, null, 4);
-	fs.writeFileSync(args.exportpath + '/index.json.js', `const searchIndex = ${json};`);
+	fs.writeFileSync(config.exportpath + '/index.json.js', `const searchIndex = ${json};`);
 }
 
 // sort dir > file > .md file
@@ -127,10 +136,11 @@ function sortFiles(x, y) {
 	}
 }
 
-function recursive(p, resolve = {}) {
+function recursive(p, resolve = {}, total = 0) {
 	const files = fs.readdirSync(p);
 	const arr = [];
 	const tree = {};
+	let count = total;
 
 	files
 		.map(f => {
@@ -146,12 +156,13 @@ function recursive(p, resolve = {}) {
 		.sort(sortFiles)
 		.forEach(({ pth, file, dir }) => {
 			const f = file;
-			if (args.ignore.indexOf(file) > -1) {
+			if (config.ignore.has(file)) {
 				return;
 			}
 
 			if (dir) {
 				const rec = recursive(pth, resolve);
+				count += rec.count;
 				tree[f] = {
 					name: pth,
 					isDir: true,
@@ -167,7 +178,9 @@ function recursive(p, resolve = {}) {
 			if (!/(\.vue|\.js|\.md)$/.test(f)) {
 				return;
 			}
-			const ctx = parseFile(pth, args);
+
+			const ctx = parseFile(pth, config);
+			count++;
 			arr.push(ctx);
 			resolve[ctx.doc.fileraw.trim()] = ctx.doc;
 			tree[f] = {
@@ -184,6 +197,7 @@ function recursive(p, resolve = {}) {
 		docs: arr,
 		tree,
 		resolve,
+		count,
 	};
 }
 

@@ -1,3 +1,5 @@
+'use strict';
+
 const asideSelected = document.querySelector(`[data-tree-index='${doc.raw}']`);
 if (asideSelected) {
 	asideSelected.classList.add('selected');

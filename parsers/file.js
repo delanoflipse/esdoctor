@@ -15,7 +15,7 @@ module.exports = (file, args) => {
 
 	const dir = path.dirname(file);
 	const filename = path.basename(file);
-	const relpath = dir.replace(args.basepath, '');
+	const relpath = dir.replace(args.dir, '');
 	const writedir = path.join(args.exportpath, relpath);
 	const writepath1 = path.join(writedir, `${filename}.html`);
 	const writepath2 = path.join(writedir, `${filename}.json`);
@@ -33,7 +33,7 @@ module.exports = (file, args) => {
 			filedir: dir,
 			file: filepath,
 			fileraw: file,
-			filepath: path.relative('/' + args.basepath, '/' + file),
+			filepath: file,
 			references: {},
 		},
 		output: {
@@ -47,7 +47,7 @@ module.exports = (file, args) => {
 		args,
 		type: 'js',
 		ast: null,
-		currentPath: path.relative('/' + args.basepath, '/' + file),
+		currentPath: file,
 	};
 
 	// extract js from template
