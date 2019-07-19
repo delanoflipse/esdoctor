@@ -1,0 +1,115 @@
+include ./mixins.pug
+include ./master.pug
+
+<!DOCTYPE html>
+html(lang="en")
+	head
+		meta(charset="UTF-8")
+		meta(name="viewport", content="width=device-width, initial-scale=1.0")
+		meta(http-equiv="X-UA-Compatible", content="ie=edge")
+		link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/codemirror@5.47.0/lib/codemirror.min.css")
+		link(rel="stylesheet", href=cssPath)
+		title File: #{doc.filename}
+	body
+		+master(doc.fileraw)
+			.file
+				.file-title
+					if ctx.type === 'vue'
+						img.vue-logo(src=vueLogoPath, alt="")
+						span Component - #{doc.filename}
+					else if ctx.type === 'md'
+						span #{doc.filename}
+					else
+						span File - #{doc.filename}
+
+
+				//- Dependencies - file imports
+				if doc.dependencies && doc.dependencies.length
+					.import-title Imports
+				each dep in doc.dependencies || []
+					div.dependency.code
+						span.export-text import 
+						if dep.imports.default
+							if dep.path.package
+								span.tag.type.export.default= dep.imports.default.id || 'foo'
+							else
+								a(href=relativePackage(doc, dep.path, 'default')).tag.type.export.default= dep.imports.default.id || 'foo'
+							if dep.imports.exports.length
+								span ,
+						if dep.imports.exports.length
+							span  { 
+							each imp, index in dep.imports.exports
+								a(href=relativePackage(doc, dep.path, imp.id || '')).tag.type.export= imp.id || 'foo'
+								if index < dep.imports.exports.length - 1
+									span  , 
+							span  }
+						span.export-text  from 
+						span.string-text '
+						if dep.path.package
+							a(href=`https://www.npmjs.com/package/${dep.path.path}`).string-text= dep.path.path
+						else
+							a(href=relativePackage(doc, dep.path)).string-text= dep.path.path
+						span.string-text '
+						span ;
+
+				//- Module exports
+				if ctx.type === 'vue' && doc.default
+					+vue(doc.default)
+				else if ctx.type === 'md' && doc.default
+					+markdown(doc.default)
+				else
+					.exports
+						if (doc.default || (doc.exports && doc.exports.length))
+							.import-title Exports
+						if doc.default
+							.document-export
+								.export-statement.code.copy#default
+									span.export-text import 
+									+exportSpan(doc.default, doc.default.id || 'foo')
+									span.export-text  from 
+									span.string-text '#{ doc.filepath }'
+									span ;
+								//- .class-title
+									//- span.tag.export.default Default export
+								+type(doc.default)
+					if doc.exports && doc.exports.length
+						each exp in doc.exports || []
+							if exp
+								.document-export
+									.export-statement.code.copy(id=exp ? exp.id || 'foo' : 'foo')
+										span.export-text import { 
+										+exportSpan(exp, exp ? exp.id || 'foo' : 'foo')
+										span.export-text  } from 
+										span.string-text '#{ doc.filepath }'
+										span ;
+									+type(exp)
+				//- Private top-level variables
+				if doc.private && doc.private.length
+					div.tag.private private
+					+propertyTable(['Type', 'Name', '', 'Description'])
+						each priv in doc.private || []
+							tr.field
+								+field(priv)
+				//- pre= JSON.stringify(doc, null, 4)
+				if ctx.type !== 'md'
+					h2 Source code
+					code.source= raw
+		script.
+			const doc = {
+				raw: '#{doc.fileraw}',
+				reldir: '#{relbaseDir}',
+				type: '#{ctx.type}',
+			};
+		script(src="https://cdn.jsdelivr.net/npm/codemirror@5.47.0/lib/codemirror.min.js")
+		script(src="https://cdn.jsdelivr.net/npm/codemirror@5.47.0/addon/mode/overlay.min.js")
+		script(src="https://cdn.jsdelivr.net/npm/codemirror@5.47.0/addon/mode/simple.min.js")
+		script(src="https://cdn.jsdelivr.net/npm/codemirror@5.47.0/mode/javascript/javascript.min.js")
+
+		script(src="https://cdn.jsdelivr.net/npm/codemirror@5.47.0/mode/xml/xml.min.js")
+		script(src="https://cdn.jsdelivr.net/npm/codemirror@5.47.0/mode/css/css.min.js")
+		script(src="https://cdn.jsdelivr.net/npm/codemirror@5.47.0/mode/stylus/stylus.min.js")
+		script(src="https://cdn.jsdelivr.net/npm/codemirror@5.47.0/mode/htmlmixed/htmlmixed.min.js")
+
+		script(src="https://cdn.jsdelivr.net/npm/codemirror@5.47.0/mode/vue/vue.min.js")
+		script(src=indexPath)
+		script(src=jsPath)

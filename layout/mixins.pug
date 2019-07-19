@@ -1,0 +1,365 @@
+//- Markdown page
+mixin markdown(content)
+	.wiki !{content}
+
+//- Vue page
+mixin vue(ast)
+	.vue-page
+		.import-title Exports
+		.vue-import.code.copy
+			span.export-text Import 
+			span.vue-text= doc.filenameOnly
+			span.export-text  from 
+			span.string-text '#{doc.filepath}'
+			span ;
+		.usage-title.import-title Usage:
+		.usage.code.copy
+			span &lt;
+			span.vue-text #{doc.filenameOnly}
+			if ast.value.props && ast.value.props
+				each prop in ast.value.props
+					br
+					if prop.default && prop.default.value && prop.default.value.value
+						span.tab &#9;:#{prop.id}="#{prop.default.value.value}"
+					else
+						span.tab &#9;:#{prop.id}=""
+				br
+			else
+				span  
+			span /&gt;
+		if ast.description
+			div
+				.vue-description Description
+				.description-block !{ast.description}
+			
+		each x, key in ast.value
+			case key
+				when 'watch'
+					.vue-key= key
+					+propertyTable(['Property', 'Description'])
+						each v in x.value.value
+							tr.field
+								td= v.id
+								td !{v.description}
+				when 'events'
+					if x
+						.vue-key= key
+						+propertyTable(['Event', 'Description'])
+							each v in x || []
+								tr.field
+									td
+										| @
+										= v.label
+									td !{v.value}
+						//- .vue-watch-field
+						//- 	span Emits event
+						//- 	b= val.id
+						//- 	if val.description
+						//- 		span : 
+						//- 		span !{val.description}
+				when 'methods'
+					.vue-key= key
+					+propertyTable()
+						each val in x.value.value
+							+field(val)
+				when 'mounted'
+					if x.description
+						.vue-key= key
+						.description-block= x.description
+				when 'middleware'
+					.vue-key= key
+					for val in x
+						+literalSpan(val.literal, val.content || val.value)
+						br
+				when 'computed'
+					.vue-key= key
+					+type(x.value.value[0])
+				when 'props'
+					.vue-key= key
+					+propertyTable()
+						each val in x
+							tr.field
+								td.field-type
+									.variable-text Property
+								if val.type.loc
+									td.field-id
+										a(href="#line-" + (val.type.loc.start.line + ctx.offset))= val.id
+								else
+									td.field-id= val.id
+								td
+									+literalTag(val.type.value)
+									if val.default
+										span  = 
+										+literalSpan(val.type.value, val.default.value.value)
+								td.description
+									span !{val.description}
+					//- each val in x
+					//- 	div
+					//- 		if val.type && typeof val.type.value === 'string'
+					//- 			+literalSpan(val.type.value, val.id)
+				default
+					.vue-key= key
+
+//- Table constructor
+mixin propertyTable(header=['Key', 'Name', 'Type', 'Description'])
+	table.class-body
+		thead.class-header
+			tr
+				each h in header
+					td= h
+		tbody
+			block
+
+//- Table tags(async/static etc.)
+mixin tags(ast)
+	if ast.tags
+		div.tags
+			each tag, key in ast.tags
+				span.tag(class=key.toLowerCase())= key
+
+//- Row field
+mixin field(ast)
+	tr.field
+		case ast.type
+			when 'cls_variable'
+				td.field-type
+					.variable-text public let
+					+tags(ast)
+				+fieldbody(ast.valuetype, ast.loc, ast.id)
+				td.description
+					if ast.description
+						| !{ast.description}
+			when 'literal'
+				td.field-type
+					.variable-text literal
+					+tags(ast)
+				+fieldbody(ast.valuetype, ast.loc, ast.id)
+				td.description
+					if ast.description
+						| !{ast.description}
+			when 'function'
+				td.field-type
+					if ast.async
+						span.tag.function async
+						span  
+					if ast.static
+						span.function-text static
+						span  
+					if ast.id === 'constructor'
+						span.constructor-text constructor
+					else
+						span.function-text function
+				+fieldbody(ast, ast.loc, ast.id)
+			default
+				span= ast.id
+
+//- Body of a row
+mixin fieldbody(ast, loc, id)
+	if ast
+		case ast.type
+			when 'literal'
+				if loc
+					td.field-id
+						a(href="#line-" + (loc.start.line + ctx.offset))= id
+				else
+					td.field-id= id
+				td.field-name
+					span  
+					+literal(ast)
+			when 'function'
+				td.field-id
+					if loc
+						a(href="#line-" + (loc.start.line + ctx.offset))= id
+					else
+						b= id
+				td.field-extra
+					span (
+					each param, index in ast.params
+						+param(param)
+						if index < ast.params.length - 1
+							span , 
+					span )
+					br
+					if ast.id === 'constructor'
+						//- div.tag.class Constructor
+					else
+						div
+							span Returns: 
+							+literal(ast.returns)
+				td.description
+					if ast.description
+						span !{ast.description}
+					div.parameter-text
+						each param, index in ast.params
+							if param && param.value && param.value.text
+								div.param-description
+									div.param-key
+										+literalSpan(param.value.literal, param.id)
+									span  - 
+									span= param.value.text
+
+
+	else
+		td.field-id
+			|  
+			= id
+		td  
+			+literalTag()
+
+//- Export span
+mixin exportSpan(ast, text)
+	if ast
+		case ast.type
+			when 'class'
+				span.class-text= text
+			when 'function'
+				span.function-text= text
+			when 'literal'
+				if typeof ast.literal !== 'string' && Array.isArray(ast.literal)
+					span= text
+				else
+					+literalSpan(ast.literal, text)
+			when 'variable'
+				span.variable-text= text
+//- Class layout
+mixin class(ast)
+	.class-ast(id=ast.id)
+		.class-title
+			.tag.class Class
+			.id #{ast.id}
+			if ast.superClass
+				div extends 
+					+literalTag(ast.superClass)
+			if ast.description
+				div
+					.description-block !{ast.description}
+		table.class-body
+			thead.class-header
+				tr
+					td Type
+					td Name
+					td
+					td Description
+			each b in ast.body || []
+				+field(b)
+			
+//- Tag with literal type text and color
+mixin literalTag(literal)
+	if typeof literal === 'string'
+		if literalValue[literal]
+			span.tag.type(class=literalValue[literal].type)= literalValue[literal].text
+		else if typeof doc.references[literal] != 'undefined'
+			a(href=relativePackage(doc, doc.references[literal], literal))
+				span.tag.type(class=literal.toLowerCase())= literal
+		else
+			span.tag.type(class=literal.toLowerCase())= literal
+	else
+		span.tag.type.any Any
+	
+//- Span with literal type text and color
+mixin literalSpan(literal, value)
+	if typeof literal === 'string'
+		if typeof literal !== 'string' && Array.isArray(literal)
+			span.any-text= value
+		else
+			if literalValue[literal]
+				span(class=literalValue[literal].type + "-text")= value
+			else if typeof doc.references[literal] != 'undefined'
+				a(href=`${doc.references[literal]}#${value}`)
+					span.tag.type(class=literal.toLowerCase())= value
+			else if literal === 'ObjectPattern' && Array.isArray(value)
+				span= '{ ' 
+				each val, index in value
+					+literalSpan(val.literal, val.value)
+					if index < value.length - 1
+						span , 
+				span= ' }' 
+
+			else
+				span(class=literal.toLowerCase() + "-text")= value
+	else
+		span= value
+
+//- Literal as used in params etc.
+mixin literal(ast, tag = false)
+	if ast
+		if typeof ast.literal !== 'string' && Array.isArray(ast.literal)
+			each val in ast.literal
+				+literalTag(val)
+			if ast.value
+				span  = 
+				+literalSpan(null, ast.value)
+		else
+			if tag
+				+literalTag(ast.literal)
+			else
+				+literalSpan(ast.literal, ast.literal)
+			if ast.value
+				span  = 
+				+literalSpan(ast.literal, ast.value)
+
+//- Extend literal (Object fully extended)
+mixin literalExt(ast, text = false)
+	if ast
+		if ast.description
+			div
+				.description-block !{ast.description}
+		div.literal
+			case ast.literal
+				when 'ObjectExpression'
+					+literalTag(ast.literal)
+					if ast.id
+						span  #{ast.id}
+						span #{' = '} 
+					span {
+					each val in ast.value
+						.obj-body
+							+literalExt(val, text)
+					span }
+				default
+					+literalTag(ast.literal)
+					if ast.id
+						span  #{ast.id}
+					if ast.value
+						span #{' = '} 
+						+literalSpan(ast.literal, ast.value)
+		//- if typeof ast.literal !== 'string' && Array.isArray(ast.literal)
+		//- 	each val in ast.literal
+		//- 		+literalTag(val)
+		//- 	if ast.value
+		//- 		span  = 
+		//- 		+literalSpan(null, ast.value)
+		//- else
+		//- 	+literalTag(ast.literal)
+		//- 	if ast.value
+		//- 		span  = 
+		//- 		+literalSpan(ast.literal, ast.value)
+
+//- Function param
+mixin param(ast)
+	if ast
+		if typeof ast === 'string'
+			.param.any= ast
+		else
+			span.parameter
+				if ast.id
+					span #{ast.id}: 
+				.tag-group
+					+literal(ast.value)
+
+//- Display export
+mixin type(ast)
+	if !ast
+	else if ast.type === 'class'
+		+class(ast)
+	else if ast.type === 'literal'
+		+literalExt(ast)
+	else
+		table.class-body
+			thead.class-header
+				tr
+					td Type
+					td Name
+					td
+					td Description
+			+field(ast)

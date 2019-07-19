@@ -1,0 +1,42 @@
+//- Recursive side nav
+mixin treenav(tree)
+	if tree.isDir
+		if tree.children && Object.keys(tree.children).filter(x => tree.children[x].ctx).length > 0
+			//- Tree
+			.tree
+				.tree-head
+					i.material-icons folder
+					span.name(title=tree.name)= tree.name
+				.tree-body
+					for child in tree.children
+						+treenav(child)
+	else
+		.node(data-tree-index=tree.ctx ? tree.ctx.doc.fileraw : '')
+			if tree.ctx
+				if tree.ctx.type === 'vue'
+					span.file-indicator.vue V
+				else if tree.ctx.type === 'md'
+					span.file-indicator.variable MD
+				else
+					span.file-indicator.class JS
+				a(href=relativeUrl(ctx, tree.ctx))= tree.name
+
+//- Master template
+mixin master(file)
+	aside
+		.aside-title
+			span Reference
+		.nav-tree
+			for child in tree
+				+treenav(child)
+	main
+		nav
+			.file-path
+				span.code= file
+			//- Search box
+			.search-box
+				form#search-box
+					input(type="text", placeholder="search")
+					div.search-box-results
+		section.main
+			block

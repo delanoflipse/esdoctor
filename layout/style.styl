@@ -1,0 +1,393 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:300,400,600');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+*
+	box-sizing border-box
+
+html, body
+	width 100%
+	height 100%
+	margin 0
+	padding 0
+	font-family "Open Sans", sans-serif
+
+body
+	display flex
+
+$gutter = 6px;
+aside
+	flex 0 0 250px
+	background #f1f1f1
+	border-right 1px solid #ddd;
+	overflow: auto
+	.aside-title
+		padding: $gutter * 2;
+		padding-bottom: $gutter;
+		font-size 18px
+		color #444
+	.nav-tree
+		padding $gutter * 2;
+		padding-top 0
+		.node
+			display: flex
+			align-items: center
+			.file-indicator
+				font-size 11px
+				font-weight: bold
+				padding 2px 4px
+				border-radius: 3px
+				margin-right: 4px
+				text-transform: uppercase
+			a
+				color inherit
+				text-decoration: none
+			&.selected
+				border-radius: 3px
+				background rgba(0, 0, 0, 0.08)
+		.tree
+			// padding $gutter 2 * $gutter;
+			margin-bottom: $gutter;
+			.tree-head
+				margin-top: $gutter;
+				display: flex
+				align-items: center
+				color #555;
+				margin-bottom $gutter;
+				text-transform: capitalize
+				span
+					flex 1
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+				i
+					font-size: 16px
+					margin-right: 4px
+		& > .tree > .tree-body
+			padding 0;
+			
+
+main
+	position relative
+	height 100%;
+	flex 1
+	padding-top: 60px
+	overflow: auto
+
+section.main
+	width 100%
+	height: 100%
+	overflow: auto
+
+nav
+	position absolute
+	top 0
+	left 0
+	right 0
+	height 60px
+	background #f1f1f1
+	border-bottom 1px solid #ddd;
+	display: flex
+	align-items: center
+	padding 0 16px
+
+	.file-path
+		flex 1
+	form
+		position relative
+		input
+			padding 4px
+			width 250px
+			max-width: 100%
+		.search-box-results
+			position absolute
+			left 0
+			z-index 9999
+			right 0
+			top: 100%
+			max-height: 90vh
+			max-height 200px
+			overflow auto
+			background white;
+			border 1px solid #ccc;
+			border-top none
+
+			&:empty, &.hide
+				display none
+
+			.result
+				display block
+				padding 0 6px
+				border-bottom: 1px solid #ccc;
+				cursor pointer
+				&:hover, &.selected
+					background rgba(0, 0, 0, 0.1s)
+				.file-index
+					color #aaa
+					font-size 12px
+				&:last-child
+					border-bottom none
+
+.import-title
+	font-size 14px
+	color #aaa;
+.file
+	padding 20px
+	.file-title
+		display: flex
+		align-items: center
+		font-size 32px
+		margin 0
+		padding 0
+		margin-bottom 20px
+		padding-bottom 10px
+		border-bottom 1px solid #aaa;
+	.dependency
+		font-size 14px
+		margin-bottom 4px
+	.exports
+		padding-top 10px
+	.export-statement
+		padding 4px 0
+
+.class-ast
+	padding 10px 0
+.class-title
+	// font-size 24px
+	padding 4px 0
+	margin-bottom 8px
+	.id
+		font-size: 28px
+.class-body
+	margin 10px 0
+	border-spacing 0px
+	width 100%
+	td:first-child
+		border-left 1px solid #ccc;
+	td:last-child
+		border-right 1px solid #ccc;
+	td
+		border-right 1px solid #eee;
+
+.class-header
+	td
+		padding 4px 8px
+		font-weight: bold
+		// border-top 1px solid #ccc;
+		border-bottom 1px solid #ccc;
+		border-top 1px solid #ccc;
+		border-right 1px solid #f7f7f7;
+		background #f7f7f7
+.field
+	display: table-row
+	margin-bottom 2px
+	p
+		margin 0
+	td
+		padding 4px 8px
+		border-bottom 1px solid #ccc
+		vertical-align: top
+	.field-type
+		width 100px
+		min-width 100px
+	> div
+		padding 2px
+	.field-body
+		flex 1
+		display: flex
+	.field-id
+		font-weight: 600
+		width 200px
+		min-width 200px
+		a
+			color inherit
+			text-decoration: none
+			&:hover
+				text-decoration: underline
+	.field-extra
+		width 40%
+		min-width 40%
+.vue-page
+	.vue-key
+		font-size 24px
+		margin 20px 0
+		text-transform: capitalize
+	.usage-title
+		margin-top 4px
+	.vue-description
+		margin 20px 0
+		margin-bottom: 0
+		font-size 24px
+.vue-logo
+	width 32px
+	margin-right: 8px
+.param-description
+	.param-key
+		display: inline-block
+		background: #eee;
+		padding: 0 5px;
+		margin: 4px 0;
+		border-radius: 5px;
+.description-block
+	color #222;
+	padding 6px
+	margin 4px 0
+	border-radius 3px
+	background #f1f1f1;
+	border-bottom 1px solid #ddd
+	display: inline-block
+	// Markdown stuff
+
+.description-block, .description
+	p
+		margin 0
+		padding 0
+	h1, h2, h3, h4, h5, h6
+		margin 0
+		padding 0
+		margin-bottom 8px
+
+.code
+	font-family: Consolas;
+	white-space: pre;
+
+	&.copy
+		display: inline-block
+		// margin-left -4px
+		// margin-right -4px
+		margin-top 2px
+		margin-bottom 2px
+		padding 4px
+		border-radius: 3px
+		background #f8f8f8;
+		border 1px solid #eee;
+
+.document-export
+	margin-bottom 10px
+
+.source
+	display none
+.CodeMirror
+	border: 1px solid #dddddd
+	height: auto
+	.line-highlight
+		background #ffeb3b
+
+.literal
+	margin 2px 0
+	.obj-body
+		padding-left 20px
+
+$tag-radius = 3px
+.tag-group
+	display inline-block
+	.tag
+		border-radius: 0
+		&:first-child
+			border-top-left-radius: $tag-radius
+			border-bottom-left-radius: $tag-radius
+		&:last-child
+			border-top-right-radius: $tag-radius
+			border-bottom-right-radius: $tag-radius
+.tag
+	display inline-block
+	background #ccc
+	padding 1px 4px
+	border-radius $tag-radius
+	font-size 14px
+	height 22px
+	&.override
+		background #18baec
+		color white
+	&.deprecated
+		background #790000
+		color white
+
+// colors
+.null-text
+	color blue
+.export-text
+	color purple
+	&.default 
+		color #f100f1
+.private-text
+	color #2196f3
+.public-text
+	color #2196f3
+.variable-text
+	color #3f51b5
+.object-text
+	color green
+.array-text
+	color #4caf50
+.string-text
+	color #009688
+.number-text
+	color #00bcd4
+.any-text
+	color #8bc34a
+.function-text
+	color #f44336
+.void-text
+	color #004336
+.boolean-text
+	color #795548
+.constructor-text
+	color #e91e63
+.class-text
+	color #ff9800
+.vue-text
+	color #41b883
+.objectpattern-text
+	color green
+// tags
+.null
+	background blue
+	color white
+.export
+	background purple
+	color white
+	&.default 
+		background #f100f1
+		color white
+.private
+	background #2196f3
+	color white
+.public 
+	background #2196f3
+	color white
+.variable 
+	background #3f51b5
+	color white
+.object 
+	background green
+	color white
+.array 
+	background #4caf50
+	color white
+.string 
+	background #009688
+	color white
+.number 
+	background #00bcd4
+	color white
+.any 
+	background #8bc34a
+	color white
+.function 
+	background #f44336
+	color white
+.void 
+	background #004336
+	color white
+.boolean 
+	background #795548
+	color white
+.constructor 
+	background #e91e63
+	color white
+.class 
+	background #ff9800
+	color white
+.vue
+	background #41b883
+	color white
