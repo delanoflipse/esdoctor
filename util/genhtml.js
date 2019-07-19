@@ -13,10 +13,10 @@ const pugtemplate = pug.compile(template, {
 
 module.exports = x => {
 	const { ctx, config, docs, tree, output, resolve, raw } = x;
-	const csspath = path.posix.join(config.exportpath, 'docs', 'static', 'style.css');
+	const csspath = path.posix.join(config.exportpath, 'docs', '__static__', 'style.css');
 	const indexpath = path.posix.join(config.exportpath, 'docs', 'index.json.js');
-	const jspath = path.posix.join(config.exportpath, 'docs', 'static', 'index.js');
-	const imgpath = path.posix.join(config.exportpath, 'docs', 'static', 'logo.png');
+	const jspath = path.posix.join(config.exportpath, 'docs', '__static__', 'index.js');
+	const imgpath = path.posix.join(config.exportpath, 'docs', '__static__', 'logo.png');
 
 	return pugtemplate({
 		cssPath: path.posix.relative(output, csspath),

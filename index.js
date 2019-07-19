@@ -45,13 +45,13 @@ function parseAll() {
 	}
 
 	fs.mkdirSync(config.exportpath, { recursive: true });
-	fs.mkdirSync(path.join(config.exportpath, 'static'), { recursive: true });
+	fs.mkdirSync(path.join(config.exportpath, '__static__'), { recursive: true });
 	logSucces('created documentation folder.');
 
 	genCSS(config);
 	logSucces('created css.');
 
-	ncp(path.join(dir, 'static'), path.join(config.exportpath, 'static'), function(err) {
+	ncp(path.join(__dirname, 'static'), path.join(config.exportpath, '__static__'), function(err) {
 		if (err) {
 			logError('failed to move static files!');
 			return console.error(err);

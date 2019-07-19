@@ -9,6 +9,6 @@ module.exports = args => {
 
 	stylus.render(cssString, { filename: 'style.css' }, function(err, css) {
 		if (err) throw err;
-		fs.writeFileSync(path.join(args.exportpath, 'static', 'style.css'), css);
+		fs.writeFileSync(path.join(args.exportpath, '__static__', 'style.css'), css);
 	});
 };
